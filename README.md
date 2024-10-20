@@ -1,6 +1,8 @@
 # RouterWCD
 Exploiting static directory cache rules
 
+![image](https://github.com/user-attachments/assets/f852ba62-4163-4a39-830c-8a863d846fc9)
+
 Installation
 ```bash
 ▶ git clone https://github.com/foorw1nner/routerwcd.git
