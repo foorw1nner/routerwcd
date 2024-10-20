@@ -5,6 +5,12 @@ The RouterWCD tool attempts to exploratory static directory cache rules and then
 
 To do this, we use md5sum to compare the body of the normal response and the modified response (with dot-segments and the static directory with cache rules).
 
+If a discrepancy is found, we begin a probability calculation to identify the percentage chance of being vulnerable to web cache deception.
+
+Tip: RouterWCD can also be an aid tool for manual or semi-automated testing, so providing http headers such as Cookie and Authorization increases your chances.
+
+NOTE: This tool was created based on portswigger's 3rd WCD laboratory: https://portswigger.net/web-security/web-cache-deception#exploiting-static-directory-cache-rules
+
 
 ![image](https://github.com/user-attachments/assets/f852ba62-4163-4a39-830c-8a863d846fc9)
 
