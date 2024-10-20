@@ -1,7 +1,7 @@
 # RouterWCD
 Exploiting static directory cache rules
 
-A ferramenta RouterWCD tenta explorar regras de cache de diretório estático e, em seguida, prossegue para a segunda etapa, onde tentamos encontrar uma discrepância nos segmentos de pontos do servidor de origem e do servidor de cache.
+The RouterWCD tool attempts to exploratory static directory cache records and then proceeds to the second step, where we attempt to find a discrepancy in the dot-segments of the origin server and the cache server.
 
 To do this, we use md5sum to compare the body of the normal response and the modified response (with dot-segments and the static directory with cache rules).
 
