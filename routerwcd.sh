@@ -190,7 +190,7 @@ then
 
 						sleep 2s
 
-						if curl -Lsk "$z$path_original" -H "$setcookie" -H "$setauthorization" | grep -qEi "$setmatch"
+						if [ -n "$setmatch" ] && curl -Lsk "$z$path_original" -H "$setcookie" -H "$setauthorization" | grep -qEi "$setmatch"
 						then
 							echo -e "[$z$path_original] \033[32m[YOUR MATCH DETECTED: $setmatch] [+20% PROBABILITY]\033[0m"
 							probability=$(expr $probability + 20)
