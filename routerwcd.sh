@@ -174,6 +174,7 @@ then
 
 					if [ "$request_md5_original" = "$request_md5_with_router" ]
 					then
+     						###INIT CALC PROBABILITY
 						if ! curl -Lski "$x" -H "$setcookie" -H "$setauthorization" | grep -qEi '^(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)'
 						then
 							if curl -Lski "$z$path_original" -H "$setcookie" -H "$setauthorization" | grep -qEi '^(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)'
