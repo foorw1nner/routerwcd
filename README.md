@@ -14,13 +14,10 @@ NOTE: This tool was created based on portswigger's 3rd WCD laboratory: https://p
 
 ![image](https://github.com/user-attachments/assets/f852ba62-4163-4a39-830c-8a863d846fc9)
 
-## STEP 1
+## STEPS
 
-![image](https://github.com/user-attachments/assets/b10c2f7f-bac9-49d1-9880-0527fbb0b704)
+![image](https://github.com/user-attachments/assets/d5d67194-f75a-49ea-9905-72f88d2b79e0)
 
-## STEP 2
-
-![image](https://github.com/user-attachments/assets/99367d59-f7ac-4d1c-97c1-4da8571a6901)
 
 Installation
 ```bash
