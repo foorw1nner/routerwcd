@@ -64,11 +64,11 @@ then
 	hostset=$(echo "$2" | sed s'/^www\.//')
 	for url in "${list[@]}"
 	do
-		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep "/static/" | sed s'/\/static\//\/static\/routerwcd@#/' | cut -d '#' -f1)
-		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep "/assets/" | sed s'/\/assets\//\/assets\/routerwcd@#/' | cut -d '#' -f1)
-		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep "/images/" | sed s'/\/images\//\/images\/routerwcd@#/' | cut -d '#' -f1)
-		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep "/scripts/" | sed s'/\/scripts\//\/scripts\/routerwcd@#/' | cut -d '#' -f1)
-		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep "/resources/" | sed s'/\/resources\//\/resources\/routerwcd@#/' | cut -d '#' -f1)
+		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/static/" | sed s'/\/static\//\/static\/routerwcd@#/' | cut -d '#' -f1)
+		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/assets/" | sed s'/\/assets\//\/assets\/routerwcd@#/' | cut -d '#' -f1)
+		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/images/" | sed s'/\/images\//\/images\/routerwcd@#/' | cut -d '#' -f1)
+		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/scripts/" | sed s'/\/scripts\//\/scripts\/routerwcd@#/' | cut -d '#' -f1)
+		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/resources/" | sed s'/\/resources\//\/resources\/routerwcd@#/' | cut -d '#' -f1)
 
 	done
 
