@@ -178,7 +178,7 @@ then
 						then
 							if curl -Lski "$z$path_original" -H "$setcookie" -H "$setauthorization" | grep -qEi '^(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)'
 							then
-								echo -e "[$z$path_original] \033[32m[DISCREPANCY DETECTED]\033 \033[32m[+80% PROBABILITY]\033[0m"
+								echo -e "[$z$path_original] \033[32m[DISCREPANCY DETECTED] [+80% PROBABILITY]\033[0m"
 								probability="80"
 
 								sleep 2s
