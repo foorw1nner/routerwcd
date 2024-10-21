@@ -139,7 +139,7 @@ then
 		echo -e "\033[31m+====================================================================================+\033[0m"
 		for x in "${list[@]}"
 		do
-			if echo "$x" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -Eiv "/(static|assets|images|resources|scripts)/" | grep -qEiv "\.(jpg|jpeg|gif|css|tif|tiff|png|ttf|woff|woff2|ico|icon|pdf|svg|txt|js|txt|webp)" | grep -q "\."
+			if echo "$x" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -Eiv "/(static|assets|images|resources|scripts)/" | grep -Eiv "\.(jpg|jpeg|gif|css|tif|tiff|png|ttf|woff|woff2|ico|icon|pdf|svg|txt|js|txt|webp)" | grep -q "\."
 			then
 				parameters=$(echo "$*" | tr -s ' ' '\n' | grep -E "^\-(host|setcookie|setauthorization|setmatch)$" | grep -n "^\-")
 
