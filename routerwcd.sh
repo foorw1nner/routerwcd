@@ -192,7 +192,7 @@ then
 
 								sleep 2s
 
-								if curl -Lski "$z$path_original" -H "$setcookie" -H "$setauthorization" | head -n1 | grep -qv '404'
+								if ! curl -Lski "$z$path_original" -H "$setcookie" -H "$setauthorization" | head -n1 | grep -q '404'
 								then
 									echo -e "[$z$path_original] \033[32m[NOT A 404 PAGE] [+5% PROBABILITY]\033[0m"
 									probability=$(expr $probability + 5)
