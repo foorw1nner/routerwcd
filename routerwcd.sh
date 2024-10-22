@@ -194,8 +194,8 @@ then
 
 								if ! curl -Lski "$z$path_original" -H "$setcookie" -H "$setauthorization" | head -n1 | grep -q '404'
 								then
-									echo -e "[$z$path_original] \033[32m[NOT A 404 PAGE] [+5% PROBABILITY]\033[0m"
-									probability=$(expr $probability + 5)
+									echo -e "[$z$path_original] \033[32m[NOT A 404 PAGE] [+4% PROBABILITY]\033[0m"
+									probability=$(expr $probability + 4)
 								fi
 							
 								echo -e "[$z$path_original] \033[32m[$probability% CHANCE OF VULNERABLE]\033[0m"
