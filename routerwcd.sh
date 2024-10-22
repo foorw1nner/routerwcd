@@ -16,7 +16,7 @@ function routerfun() {
 			str+="..%2f"
 		done
 
-		storedrouters+=$(echo "$hostandpath/$str" | sed s'/$/@/')
+		storedrouters+=$(echo "$hostandpath/$str@")
 
 done
 
@@ -43,7 +43,7 @@ echo "[ by: foorw1nner | x.com/foorw1nner | hackerone.com/foorw1nner | github.co
 	echo "-host		   -host yourtarget.com		"
 	echo "-setcookie	   -setcookie \"Cookie: session=2vv07IdA37Npc1imvN2lQV0ZghMaxSSa\""
 	echo "-setauthorization  -setauthorization \"Authorization: basic cm91dGVyd2Nk\""
-    echo "-setmatch	   -setmatch \"Email|UserID|Token|PHPSESSID\""
+    	echo "-setmatch	   -setmatch \"Email|UserID|Token|PHPSESSID\""
 	echo
 	echo "+===========================================================+"
 
@@ -87,7 +87,7 @@ then
 
 				if echo "$cache" | grep -iq "hit"
 				then
-					storewcd=$(echo "$url" | sed s'/$/@/')
+					storewcd=$(echo "$url@")
 					echo -e "[$url] \033[32m[MISS -> HIT]\033[0m"
 					routerfun
 				fi
@@ -110,7 +110,7 @@ then
 
 						if echo "$cache" | grep -iq "hit"
 						then
-							storewcd=$(echo "$changewcd" | sed s'/$/@/')
+							storewcd=$(echo "$changewcd@")
 							echo -e "[$changewcd] \033[32m[MISS -> HIT]\033[0m"
 							routerfun
 						fi
