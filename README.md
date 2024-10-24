@@ -16,7 +16,8 @@ NOTE: This tool was created based on portswigger's 3rd WCD laboratory: https://p
 
 ## STEPS
 
-![image](https://github.com/user-attachments/assets/664225f6-fcbd-42c3-831f-a8adef061d0d)
+![image](https://github.com/user-attachments/assets/05e84257-7994-4295-ab5e-c8e2f86df28e)
+
 
 
 
