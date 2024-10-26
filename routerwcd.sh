@@ -42,8 +42,8 @@ echo "[ by: foorw1nner | x.com/foorw1nner | hackerone.com/foorw1nner | github.co
 	echo
 	echo "-host		   -host yourtarget.com		"
 	echo "-setcookie	   -setcookie \"Cookie: session=2vv07IdA37Npc1imvN2lQV0ZghMaxSSa\""
-	echo "-setauthorization  -setauthorization \"Authorization: basic cm91dGVyd2Nk\""
-    	echo "-setmatch	   -setmatch \"Email|UserID|Token|PHPSESSID\""
+	echo "-setcontinue 	   -setcontinue (yes|no) | Stay on target after finding a discrepancy? Default: yes"
+    echo "-setmatch	   -setmatch \"Email|UserID|Token|PHPSESSID\""
 	echo
 	echo "+===========================================================+"
 
@@ -137,73 +137,108 @@ then
 		echo -e "\033[31m+====================================================================================+\033[0m"
 		echo -e "\033[32mSTEP 2: DETECTING NORMALIZATION BY THE ORIGIN SERVER\033[0m"
 		echo -e "\033[31m+====================================================================================+\033[0m"
+
+		####INIT PARAMETERS CALC
+		parameters=$(echo "$*" | tr -s ' ' '\n' | grep -E "^\-(host|setcookie|setcontinue|setmatch)$" | grep -n "^\-")
+
+		if echo "$parameters" | grep -q "\-setcookie"
+		then
+			position_cookie=$(echo "$parameters" | grep "\-setcookie" | cut -d ':' -f1)
+			position_cookie_value=$(expr $position_cookie + $position_cookie)
+			setcookie=${!position_cookie_value}
+		fi
+
+		if echo "$parameters" | grep -q "\-setcontinue"
+		then
+			position_continue=$(echo "$parameters" | grep "\-setcontinue" | cut -d ':' -f1)
+			position_continue_value=$(expr $position_continue + $position_continue)
+			setcontinue=${!position_continue_value}
+		fi
+
+		if echo "$parameters" | grep -q "\-setmatch"
+		then
+			position_match=$(echo "$parameters" | grep "\-setmatch" | cut -d ':' -f1)
+			position_match_value=$(expr $position_match + $position_match)
+			setmatch=${!position_match_value}
+		fi
+		
+		###INIT FINISH FASE
+		crawler_clean=()
 		for x in "${list[@]}"
 		do
-			if echo "$x" | grep -Ei "(^https?://www\.$hostset/|^https?://$hostset/)[A-Za-z0-9_-]+" | grep -Eiv "^https?://[^?=]*/(static|assets|images|resources|scripts)/" | grep -Eiv "^https?://[^?=]*\.(jpg|jpeg|gif|css|tif|tiff|png|ttf|woff|woff2|ico|icon|pdf|svg|txt|js|txt|webp)" | grep -q "\."
-			then
-				parameters=$(echo "$*" | tr -s ' ' '\n' | grep -E "^\-(host|setcookie|setauthorization|setmatch)$" | grep -n "^\-")
+			crawler_clean+=$(echo "$x" | grep -Ei "(^https?://www\.$hostset/|^https?://$hostset/)[A-Za-z0-9_-]+" | grep -Eiv "^https?://[^?=]*/(static|assets|images|resources|scripts)/" | grep -Eiv "^https?://[^?=]*\.(jpg|jpeg|gif|css|tif|tiff|png|ttf|woff|woff2|ico|icon|pdf|svg|txt|js|txt|webp)" | grep "\." | sed s'/$/@/')
+		done
 
-				if echo "$parameters" | grep -q "\-setcookie"
-				then
-					position_cookie=$(echo "$parameters" | grep "\-setcookie" | cut -d ':' -f1)
-					position_cookie_value=$(expr $position_cookie + $position_cookie)
-					setcookie=${!position_cookie_value}
-				fi
+		if [ -n "$crawler_clean" ]
+		then
 
-				if echo "$parameters" | grep -q "\-setauthorization"
-				then
-					position_authorization=$(echo "$parameters" | grep "\-setauthorization" | cut -d ':' -f1)
-					position_authorization_value=$(expr $position_authorization + $position_authorization)
-					setauthorization=${!position_authorization_value}
-				fi
+			for y in $(echo "$crawler_clean" | tr -s '@' '\n' | head -n50)
+			do
 
-				if echo "$parameters" | grep -q "\-setmatch"
-				then
-					position_match=$(echo "$parameters" | grep "\-setmatch" | cut -d ':' -f1)
-					position_match_value=$(expr $position_match + $position_match)
-					setmatch=${!position_match_value}
-				fi
+				request_md5_original=$(curl -Lsk "$y" -H "$setcookie" | md5sum)
+				path_original=$(echo "$y" | sed -E s'/https:\/\/[^/]*\///')
 
-				request_md5_original=$(curl -Lsk "$x" -H "$setcookie" -H "$setauthorization" | md5sum)
-				path_original=$(echo "$x" | sed -E s'/https:\/\/[^/]*\///')
-				echo -e "[$x] \033[31m[$request_md5_original]\033[0m"
 				for z in $(echo "$storedrouters" | tr -s '@' '\n')
 				do
-					request_md5_with_router=$(curl -Lsk "$z$path_original" -H "$setcookie" -H "$setauthorization" | md5sum)
+					request_md5_with_router=$(curl -Lsk "$z$path_original" -H "$setcookie" | md5sum)
+
+					echo -e "[$y] \033[31m[$request_md5_original]\033[0m"
 					echo -e "[$z$path_original] \033[31m[$request_md5_with_router]\033[0m"
 
 					if [ "$request_md5_original" = "$request_md5_with_router" ]
 					then
-     						###INIT CALC PROBABILITY
-						if ! curl -Lski "$x" -H "$setcookie" -H "$setauthorization" | grep -qEi '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)'
+							###INIT CALC PROBABILITY
+						if ! curl -Lski "$y" -H "$setcookie" | grep -qEi '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)'
 						then
-							if curl -Lski "$z$path_original" -H "$setcookie" -H "$setauthorization" | grep -qEi '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)'
+							if curl -Lski "$z$path_original" -H "$setcookie" | grep -qEi '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)'
 							then
-								echo -e "[$z$path_original] \033[32m[DISCREPANCY DETECTED] [+50% PROBABILITY]\033[0m"
+								###DISCREPANCY DETECTED +50% PROBABILITY
 								probability="50"
 
 								sleep 2s
 
-								if [ -n "$setmatch" ] && curl -Lski "$z$path_original" -H "$setcookie" -H "$setauthorization" | grep -qEi "$setmatch"
+								setmatch_status="\033[31mNO\033[0m"
+								if [ -n "$setmatch" ] && curl -Lski "$z$path_original" -H "$setcookie" | grep -qEi "$setmatch"
 								then
-									echo -e "[$z$path_original] \033[32m[YOUR MATCH DETECTED: $setmatch] [+45% PROBABILITY]\033[0m"
+									###SETMATCH DETECTED +45% PROBABILITY
 									probability=$(expr $probability + 45)
+									setmatch_status="\033[32mYES\033[0m"
 								fi
 
 								sleep 2s
 
-								if ! curl -Lski "$z$path_original" -H "$setcookie" -H "$setauthorization" | head -n1 | grep -q '404'
+								page404_status="\033[31mYES\033[0m"
+								if ! curl -Lski "$z$path_original" -H "$setcookie" | head -n1 | grep -q '404'
 								then
-									echo -e "[$z$path_original] \033[32m[NOT A 404 PAGE] [+4% PROBABILITY]\033[0m"
+									###NOT A 404 PAGE +4% PROBABILITY
 									probability=$(expr $probability + 4)
+									page404_status="\033[32mNO\033[0m"
 								fi
 							
-								echo -e "[$z$path_original] \033[32m[$probability% CHANCE OF VULNERABLE]\033[0m"
-						fi	fi
-					fi 
+								echo -e "[$z$path_original] \033[32m[DISCREPANCY DETECTED]\033[0m [SETMATCH: $setmatch_status] [404 PAGE: $page404_status] [PROBABILITY VULN: \033[32m$probability%\033[0m]"
+							fi
+						fi
+					fi
 				done
-			fi
-		done
+
+				if [ -n "$setcontinue" ]
+				then
+
+					if [ "$setcontinue" = "no" ]
+					then
+						if [ "$probability" -ge 50 ]
+						then
+							break
+						fi
+					else
+						continue
+					fi
+
+				fi
+							
+			done
+		fi
+				
 	else
 			echo -e "\033[31m+====================================================================================+\033[0m"
 			echo -e "\033[31mNO STATIC DIRECTORIES WERE FOUND WITH CACHE HEADERS\033[0m"
