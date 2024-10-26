@@ -7,16 +7,18 @@ To do this, we use md5sum to compare the body of the normal response and the mod
 
 If a discrepancy is found, we begin a probability calculation to identify the percentage chance of being vulnerable to web cache deception.
 
-Tip: RouterWCD can also be an aid tool for manual or semi-automated testing, so providing http headers such as Cookie and Authorization increases your chances.
+Tip: RouterWCD can also be an aid tool for manual or semi-automated testing, so providing http headers such as Cookie increases your chances.
 
 NOTE: This tool was created based on portswigger's 3rd WCD laboratory: https://portswigger.net/web-security/web-cache-deception#exploiting-static-directory-cache-rules
 
 
-![image](https://github.com/user-attachments/assets/f852ba62-4163-4a39-830c-8a863d846fc9)
+![image](https://github.com/user-attachments/assets/a6e33835-c110-4201-8594-bfef6b1548fa)
+
 
 ## STEPS
 
-![image](https://github.com/user-attachments/assets/05e84257-7994-4295-ab5e-c8e2f86df28e)
+![image](https://github.com/user-attachments/assets/e511ed70-9b6b-49fd-bd73-9a2e4d479768)
+
 
 
 
@@ -36,5 +38,5 @@ Usage
 
 Example
 ```bash
-cat crawler.txt | ./routerwcd.sh -host host.com -setcookie "Cookie: session=2vv07IdA37Npc1imvN2lQV0ZghMaxSSa" -setauthorization "Authorization: basic cm91dGVyd2Nk" -setmatch "Email|UserID|Token|PHPSESSID"
+cat crawler.txt | ./routerwcd.sh -host host.com -setcontinue no -setcookie "Cookie: session=2vv07IdA37Npc1imvN2lQV0ZghMaxSSa" -setmatch "Email|UserID|Token|PHPSESSID"
 ```
