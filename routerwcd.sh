@@ -184,6 +184,7 @@ then
 
 					echo -e "[$y] \033[31m[$request_md5_original]\033[0m"
 					echo -e "[$z$path_original] \033[31m[$request_md5_with_router]\033[0m"
+					probability="0"
 
 					if [ "$request_md5_original" = "$request_md5_with_router" ]
 					then
@@ -228,7 +229,7 @@ then
 					then
 						if [ "$probability" -ge 50 ]
 						then
-							break
+							exit
 						fi
 					else
 						continue
