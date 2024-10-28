@@ -43,7 +43,7 @@ echo "[ by: foorw1nner | x.com/foorw1nner | hackerone.com/foorw1nner | github.co
 	echo "-host		   -host yourtarget.com		"
 	echo "-setcookie	   -setcookie \"Cookie: session=2vv07IdA37Npc1imvN2lQV0ZghMaxSSa\""
 	echo "-setcontinue 	   -setcontinue (yes|no) | Stay on target after finding a discrepancy? Default: yes"
-    echo "-setmatch	   -setmatch \"Email|UserID|Token|PHPSESSID\""
+    	echo "-setmatch	   -setmatch \"Email|UserID|Token|PHPSESSID\""
 	echo
 	echo "+===========================================================+"
 
