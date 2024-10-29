@@ -172,7 +172,7 @@ then
 		if [ -n "$crawler_clean" ]
 		then
 
-			for y in $(echo "$crawler_clean" | tr -s '@' '\n' | head -n50)
+			for y in $(echo "$crawler_clean" | shuf | tr -s '@' '\n' | head -n50)
 			do
 
 				request_md5_original=$(curl -Lsk "$y" -H "$setcookie" | md5sum)
