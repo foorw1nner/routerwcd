@@ -43,4 +43,4 @@ cat crawler.txt | ./routerwcd.sh -host host.com -setcontinue no -setcookie "Cook
 
 
 
-## Use for Good Purposes!
+## Use for Good Purposes!!
