@@ -40,3 +40,7 @@ Example
 ```bash
 cat crawler.txt | ./routerwcd.sh -host host.com -setcontinue no -setcookie "Cookie: session=2vv07IdA37Npc1imvN2lQV0ZghMaxSSa" -setmatch "Email|UserID|Token|PHPSESSID"
 ```
+
+
+
+## Use for Good Purposes!
