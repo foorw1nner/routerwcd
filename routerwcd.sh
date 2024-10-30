@@ -2,23 +2,19 @@
 
 function routerfun() {
 
-	for url in $(echo "$storewcd" | tr -s '@' '\n')
+	levelurl=$(echo "$storewcd" | sed -E s'/https?:\/\/[^/]*\///' | tr -s '/' '\n' | grep -v 'routerwcd' | wc -l)
+	hostandpath=$(echo "$storewcd" | sed s'/\/routerwcd/ /'| cut -d ' ' -f1)
+
+	num=$levelurl
+
+	str=""
+
+	for i in $(seq 1 $num)
 	do
-		levelurl=$(echo "$url" | sed -E s'/https?:\/\/[^/]*\///' | tr -s '/' '\n' | grep -v 'routerwcd' | wc -l)
-		hostandpath=$(echo "$url" | sed s'/\/routerwcd/ /'| cut -d ' ' -f1)
+		str+="..%2f"
+	done
 
-		num=$levelurl
-
-		str=""
-
-		for i in $(seq 1 $num)
-		do
-			str+="..%2f"
-		done
-
-		storedrouters+=$(echo "$hostandpath/$str@")
-
-done
+	storedrouters+=$(echo "$hostandpath/$str@")
 
 }
 
@@ -87,7 +83,7 @@ then
 
 				if echo "$cache" | grep -iq "hit"
 				then
-					storewcd=$(echo "$url@")
+					storewcd=$(echo "$url")
 					echo -e "[$url] \033[32m[MISS -> HIT]\033[0m"
 					routerfun
 				fi
@@ -111,7 +107,7 @@ then
 
 						if echo "$cache" | grep -iq "hit"
 						then
-							storewcd=$(echo "$changewcd@")
+							storewcd=$(echo "$changewcd")
 							echo -e "[$changewcd] \033[32m[MISS -> HIT]\033[0m"
 							routerfun
 						fi
