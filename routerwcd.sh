@@ -1,9 +1,9 @@
 #!/bin/bash
 
-function routerfun() {
+function routerfunc() {
 
-	levelurl=$(echo "$storewcd" | sed -E s'/https?:\/\/[^/]*\///' | tr -s '/' '\n' | grep -v 'routerwcd' | wc -l)
-	hostandpath=$(echo "$storewcd" | sed s'/\/routerwcd/ /'| cut -d ' ' -f1)
+	levelurl=$(echo "$directory_cache_rule" | sed -E s'/https?:\/\/[^/]*\///' | tr -s '/' '\n' | grep -v 'routerwcd' | wc -l)
+	hostandpath=$(echo "$directory_cache_rule" | sed s'/\/routerwcd/ /'| cut -d ' ' -f1)
 
 	num=$levelurl
 
@@ -14,7 +14,7 @@ function routerfun() {
 		str+="..%2f"
 	done
 
-	storedrouters+=$(echo "$hostandpath/$str@")
+	hostandpath_with_dotsegments+=$(echo "$hostandpath/$str@")
 
 }
 
@@ -60,14 +60,14 @@ then
 	hostset=$(echo "$2" | sed s'/^www\.//')
 	for url in "${list[@]}"
 	do
-		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/static/" | sed s'/\/static\//\/static\/routerwcd@#/' | cut -d '#' -f1)
-		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/assets/" | sed s'/\/assets\//\/assets\/routerwcd@#/' | cut -d '#' -f1)
-		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/images/" | sed s'/\/images\//\/images\/routerwcd@#/' | cut -d '#' -f1)
-		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/scripts/" | sed s'/\/scripts\//\/scripts\/routerwcd@#/' | cut -d '#' -f1)
-		show+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/resources/" | sed s'/\/resources\//\/resources\/routerwcd@#/' | cut -d '#' -f1)
+		static_directories+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/static/" | sed s'/\/static\//\/static\/routerwcd@#/' | cut -d '#' -f1)
+		static_directories+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/assets/" | sed s'/\/assets\//\/assets\/routerwcd@#/' | cut -d '#' -f1)
+		static_directories+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/images/" | sed s'/\/images\//\/images\/routerwcd@#/' | cut -d '#' -f1)
+		static_directories+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/scripts/" | sed s'/\/scripts\//\/scripts\/routerwcd@#/' | cut -d '#' -f1)
+		static_directories+=$(echo "$url" | grep -Ei "^https?://www\.$hostset/|^https?://$hostset/" | grep -E "^https?://[^?=]*/resources/" | sed s'/\/resources\//\/resources\/routerwcd@#/' | cut -d '#' -f1)
 	done
 
-	for url	in $(echo "$show" | tr -s '@' '\n' | sort -u)
+	for url	in $(echo "$static_directories" | tr -s '@' '\n' | sort -u)
 	do
 		###SEARCHING CACHE RULES IN DIRECTORIES (MISS|HIT) directories/routerwcd
 		if cache=$(curl -Lisk "$url" | grep -Ei '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)')
@@ -83,33 +83,33 @@ then
 
 				if echo "$cache" | grep -iq "hit"
 				then
-					storewcd=$(echo "$url")
+					directory_cache_rule=$(echo "$url")
 					echo -e "[$url] \033[32m[MISS -> HIT]\033[0m"
-					routerfun
+					routerfunc
 				fi
 			###This else is for any occasion in which the first request falls into HIT instead of MISS
 			else
 				###Make a draw at the end of the cd router (unpredictable hash) to find MISS in the first request
-				sortwcd=$(echo {a..z}{0..9} | tr -s ' ' '\n'  | shuf | head -n 5 | tr -s '\n' '0')
-				changewcd=$(echo "$url" | sed s"/\/routerwcd/\/routerwcd_$sortwcd/")
+				sorthash=$(echo {a..z}{0..9} | tr -s ' ' '\n'  | shuf | head -n 5 | tr -s '\n' '0')
+				modified_url=$(echo "$url" | sed s"/\/routerwcd/\/routerwcd_$sorthash/")
 
-				if cache=$(curl -Lisk "$changewcd" | grep -Ei '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)')
+				if cache=$(curl -Lisk "$modified_url" | grep -Ei '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)')
 				then
 					if echo "$cache" | grep -iq "miss"
 					then
 
-						echo -e "[$changewcd] \033[32m[MISS]\033[0m"
+						echo -e "[$modified_url] \033[32m[MISS]\033[0m"
 						for i in $(seq 1 3)
 						do
-							cache=$(curl -Lisk "$changewcd" | grep -Ei '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)')
+							cache=$(curl -Lisk "$modified_url" | grep -Ei '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)')
        							sleep 3
 						done
 
 						if echo "$cache" | grep -iq "hit"
 						then
-							storewcd=$(echo "$changewcd")
-							echo -e "[$changewcd] \033[32m[MISS -> HIT]\033[0m"
-							routerfun
+							directory_cache_rule=$(echo "$modified_url")
+							echo -e "[$modified_url] \033[32m[MISS -> HIT]\033[0m"
+							routerfunc
 						fi
 					fi
 				fi
@@ -120,12 +120,12 @@ then
 	done
 
 	###STEP2
-	if [ -n "$storedrouters" ]
+	if [ -n "$hostandpath_with_dotsegments" ]
 	then
 		echo
 		echo -e "\033[31m+====================================================================================+\033[0m"
 		echo -e "\033[32mPATHS WITH CACHE RULES:\033[0m"	
-		for i in $(echo "$storedrouters" | tr -s '@' '\n')
+		for i in $(echo "$hostandpath_with_dotsegments" | tr -s '@' '\n')
 		do
 			echo "$i" | sed -E s'/https:\/\/[^/]*\///' | sed s'/^/\//' | sed s'/\.\.%2f/ /' | cut -d ' ' -f1
 		done
@@ -175,7 +175,7 @@ then
 				request_md5_original=$(curl -Lsk "$y" -H "$setcookie" | md5sum)
 				path_original=$(echo "$y" | sed -E s'/https:\/\/[^/]*\///')
 
-				for z in $(echo "$storedrouters" | tr -s '@' '\n')
+				for z in $(echo "$hostandpath_with_dotsegments" | tr -s '@' '\n')
 				do
 					request_md5_with_router=$(curl -Lsk "$z$path_original" -H "$setcookie" | md5sum)
 
