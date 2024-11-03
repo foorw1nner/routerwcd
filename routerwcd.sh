@@ -83,7 +83,7 @@ then
 
 				if echo "$cache" | grep -iq "hit"
 				then
-					directory_cache_rule=$(echo "$url")
+					directory_cache_rule=$url
 					echo -e "[$url] \033[32m[MISS -> HIT]\033[0m"
 					routerfunc
 				fi
@@ -107,7 +107,7 @@ then
 
 						if echo "$cache" | grep -iq "hit"
 						then
-							directory_cache_rule=$(echo "$modified_url")
+							directory_cache_rule=$modified_url
 							echo -e "[$modified_url] \033[32m[MISS -> HIT]\033[0m"
 							routerfunc
 						fi
