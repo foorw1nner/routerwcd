@@ -70,14 +70,14 @@ then
 	for url	in $(echo "$static_directories" | tr -s '@' '\n' | sort -u)
 	do
 		###SEARCHING CACHE RULES IN DIRECTORIES (MISS|HIT) directories/routerwcd
-		if cache=$(curl -Lisk "$url" | grep -Ei '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)')
+		if cache=$(curl -Lisk "$url" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|Server-Timing:\s.*desc=(miss|hit)')
 		then
 			if echo "$cache" | grep -iq "miss"
 			then
 				echo -e "[$url] \033[32m[MISS]\033[0m"
 				for i in $(seq 1 3)
 				do
-					cache=$(curl -Lisk "$url" | grep -Ei '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)')
+					cache=$(curl -Lisk "$url" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|Server-Timing:\s.*desc=(miss|hit)')
 					sleep 3
 				done
 
@@ -93,7 +93,7 @@ then
 				sorthash=$(echo {a..z}{0..9} | tr -s ' ' '\n'  | shuf | head -n 5 | tr -s '\n' '0')
 				modified_url=$(echo "$url" | sed s"/\/routerwcd/\/routerwcd_$sorthash/")
 
-				if cache=$(curl -Lisk "$modified_url" | grep -Ei '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)')
+				if cache=$(curl -Lisk "$modified_url" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|Server-Timing:\s.*desc=(miss|hit)')
 				then
 					if echo "$cache" | grep -iq "miss"
 					then
@@ -101,7 +101,7 @@ then
 						echo -e "[$modified_url] \033[32m[MISS]\033[0m"
 						for i in $(seq 1 3)
 						do
-							cache=$(curl -Lisk "$modified_url" | grep -Ei '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)')
+							cache=$(curl -Lisk "$modified_url" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|Server-Timing:\s.*desc=(miss|hit)')
        							sleep 3
 						done
 
@@ -186,9 +186,9 @@ then
 					if [ "$request_md5_original" = "$request_md5_with_router" ]
 					then
 							###INIT CALC PROBABILITY
-						if ! curl -Lski "$y" -H "$setcookie" | grep -qEi '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)'
+						if ! curl -Lski "$y" -H "$setcookie" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|Server-Timing:\s.*desc=(miss|hit)'
 						then
-							if curl -Lski "$z$path_original" -H "$setcookie" | grep -qEi '^[A-Za-z-]+?(X-Cache:|X-Cache-Status:|X-Drupal-Cache:|X-Joomla-Cache:|X-Varnish:|X-Magento-Cache:|X-Sucuri-Cache:|X-Edge-Cache:|CF-Cache-Status:|X-CDN-Cache:|X-Fastly-Cache:|X-Proxy-Cache:|X-Nginx-Cache:|X-Cache-Server:|X-Cache-Provider:|X-Cache-Lookup:|X-Redis-Cache:|X-Cache-Int:|X-Accel-Cache:|X-Memcached-Cache:|X-Hyper-Cache:|X-WP-Cache:|X-Page-Cache:)\s(miss|hit)|^Server-Timing:\scdn-cache;\sdesc=(hit|miss)'
+							if curl -Lski "$z$path_original" -H "$setcookie" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|Server-Timing:\s.*desc=(miss|hit)'
 							then
 								###DISCREPANCY DETECTED +50% PROBABILITY
 								probability="50"
