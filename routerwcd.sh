@@ -185,7 +185,7 @@ then
 
 					if [ "$request_md5_original" = "$request_md5_with_router" ]
 					then
-							###INIT CALC PROBABILITY
+						###INIT CALC PROBABILITY
 						if ! curl -Lski "$y" -H "$setcookie" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|Server-Timing:\s.*desc=(miss|hit)'
 						then
 							if curl -Lski "$z$path_original" -H "$setcookie" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|Server-Timing:\s.*desc=(miss|hit)'
