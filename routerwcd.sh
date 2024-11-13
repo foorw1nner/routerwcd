@@ -190,11 +190,11 @@ then
 				do
 					curl -Lski "$z$path_original" -H "$setcookie" > /tmp/routerwcd_modifyendpoint_tmp
 
-					end_body1=$(cat /tmp/routerwcd_originalendpoint_tmp | grep -n "<html" | head -n1 | cut -d ':' -f1)
-					end_body2=$(cat /tmp/routerwcd_modifyendpoint_tmp | grep -n "<html" | head -n1 | cut -d ':' -f1)
+					only_body1=$(cat /tmp/routerwcd_originalendpoint_tmp | grep -n "<html" | head -n1 | cut -d ':' -f1)
+					only_body2=$(cat /tmp/routerwcd_modifyendpoint_tmp | grep -n "<html" | head -n1 | cut -d ':' -f1)
 
-					request_md5_original=$(cat /tmp/routerwcd_originalendpoint_tmp | sed -n "$end_body1,\$p" | md5sum)
-					request_md5_with_router=$(cat /tmp/routerwcd_modifyendpoint_tmp | sed -n "$end_body2,\$p" | md5sum)
+					request_md5_original=$(cat /tmp/routerwcd_originalendpoint_tmp | sed -n "$only_body1,\$p" | md5sum)
+					request_md5_with_router=$(cat /tmp/routerwcd_modifyendpoint_tmp | sed -n "$only_body2,\$p" | md5sum)
 
 					echo -e "[$y] \033[31m[$request_md5_original]\033[0m"
 					echo -e "[$z$path_original] \033[31m[$request_md5_with_router]\033[0m"
