@@ -70,16 +70,22 @@ then
 	for url	in $(echo "$static_directories" | tr -s '@' '\n' | sort -u)
 	do
 		###SEARCHING CACHE RULES IN DIRECTORIES (MISS|HIT) directories/routerwcd
-		if cache=$(curl -Lisk "$url" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
+		curl -Lisk "$url" > /tmp/routerwcd_cache_tmp
+		end_response=$(cat /tmp/routerwcd_cache_tmp | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+
+		if cache=$(cat /tmp/routerwcd_cache_tmp | sed -n "$end_response,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
 		then
 			if echo "$cache" | grep -iq "miss"
 			then
 				echo -e "[$url] \033[32m[MISS]\033[0m"
-				for i in $(seq 1 3)
+				for i in $(seq 1 2)
 				do
-					cache=$(curl -Lisk "$url" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
+					curl -Lisk "$url" > /tmp/routerwcd_cache_tmp
 					sleep 3
 				done
+
+				end_response=$(cat /tmp/routerwcd_cache_tmp | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+				cache=$(cat /tmp/routerwcd_cache_tmp | sed -n "$end_response,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
 
 				if echo "$cache" | grep -iq "hit"
 				then
@@ -93,17 +99,23 @@ then
 				sorthash=$(echo {a..z}{0..9} | tr -s ' ' '\n'  | shuf | head -n 5 | tr -s '\n' '0')
 				modified_url=$(echo "$url" | sed s"/\/routerwcd/\/routerwcd_$sorthash/")
 
-				if cache=$(curl -Lisk "$modified_url" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
+				curl -Lisk "$modified_url" > /tmp/routerwcd_cache_tmp
+				end_response=$(cat /tmp/routerwcd_cache_tmp | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+
+				if cache=$(cat /tmp/routerwcd_cache_tmp | sed -n "$end_response,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
 				then
 					if echo "$cache" | grep -iq "miss"
 					then
 
 						echo -e "[$modified_url] \033[32m[MISS]\033[0m"
-						for i in $(seq 1 3)
+						for i in $(seq 1 2)
 						do
-							cache=$(curl -Lisk "$modified_url" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
-       							sleep 3
+							curl -Lisk "$modified_url" > /tmp/routerwcd_cache_tmp
+							sleep 3
 						done
+
+						end_response=$(cat /tmp/routerwcd_cache_tmp | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+						cache=$(cat /tmp/routerwcd_cache_tmp | sed -n "$end_response,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
 
 						if echo "$cache" | grep -iq "hit"
 						then
@@ -171,13 +183,18 @@ then
 
 			for y in $(echo "$crawler_clean" | tr -s '@' '\n' | shuf | head -n50)
 			do
-
-				request_md5_original=$(curl -Lsk "$y" -H "$setcookie" | md5sum)
+				curl -Lski "$y" -H "$setcookie" > /tmp/routerwcd_originalendpoint_tmp
 				path_original=$(echo "$y" | sed -E s'/https:\/\/[^/]*\///')
 
 				for z in $(echo "$hostandpath_with_dotsegments" | tr -s '@' '\n')
 				do
-					request_md5_with_router=$(curl -Lsk "$z$path_original" -H "$setcookie" | md5sum)
+					curl -Lski "$z$path_original" -H "$setcookie" > /tmp/routerwcd_modifyendpoint_tmp
+
+					end_body1=$(cat /tmp/routerwcd_originalendpoint_tmp | grep -n "<html" | head -n1 | cut -d ':' -f1)
+					end_body2=$(cat /tmp/routerwcd_modifyendpoint_tmp | grep -n "<html" | head -n1 | cut -d ':' -f1)
+
+					request_md5_original=$(cat /tmp/routerwcd_originalendpoint_tmp | sed -n "$end_body1,\$p" | md5sum)
+					request_md5_with_router=$(cat /tmp/routerwcd_modifyendpoint_tmp | sed -n "$end_body2,\$p" | md5sum)
 
 					echo -e "[$y] \033[31m[$request_md5_original]\033[0m"
 					echo -e "[$z$path_original] \033[31m[$request_md5_with_router]\033[0m"
@@ -186,9 +203,13 @@ then
 					if [ "$request_md5_original" = "$request_md5_with_router" ]
 					then
 						###INIT CALC PROBABILITY
-						if ! curl -Lski "$y" -H "$setcookie" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)'
+						
+						end_response=$(cat /tmp/routerwcd_originalendpoint_tmp | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+						if ! cat /tmp/routerwcd_originalendpoint_tmp | sed -n "$end_response,\$p" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)'
 						then
-							if curl -Lski "$z$path_original" -H "$setcookie" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)'
+							
+							end_response=$(cat /tmp/routerwcd_modifyendpoint_tmp | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+							if cat /tmp/routerwcd_modifyendpoint_tmp | sed -n "$end_response,\$p" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)'
 							then
 								###DISCREPANCY DETECTED +50% PROBABILITY
 								probability="50"
@@ -196,7 +217,7 @@ then
 								sleep 2s
 
 								setmatch_status="\033[31mNO\033[0m"
-								if [ -n "$setmatch" ] && curl -Lski "$z$path_original" -H "$setcookie" | grep -qEi "$setmatch"
+								if [ -n "$setmatch" ] && cat /tmp/routerwcd_modifyendpoint_tmp | sed -n "$end_response,\$p" | grep -qEi "$setmatch"
 								then
 									###SETMATCH DETECTED +45% PROBABILITY
 									probability=$(expr $probability + 45)
@@ -206,7 +227,7 @@ then
 								sleep 2s
 
 								page404_status="\033[31mYES\033[0m"
-								if ! curl -Lski "$z$path_original" -H "$setcookie" | head -n1 | grep -q '404'
+								if ! cat /tmp/routerwcd_modifyendpoint_tmp | sed -n "$end_response,\$p" | head -n1 | grep -q '404'
 								then
 									###NOT A 404 PAGE +4% PROBABILITY
 									probability=$(expr $probability + 4)
