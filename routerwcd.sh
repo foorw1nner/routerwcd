@@ -73,8 +73,8 @@ then
 		request_dir=$(curl -Lisk "$url")
 		if [ -n "$request_dir" ]
 		then
-			only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
 
+			only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
 			if cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
 			then
 				if echo "$cache" | grep -iq "miss"
@@ -86,14 +86,18 @@ then
 						sleep 3
 					done
 
-					only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
-					cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
-
-					if echo "$cache" | grep -iq "hit"
+					if [ -n "$request_dir" ]
 					then
-						directory_cache_rule=$url
-						echo -e "[$url] \033[32m[MISS -> HIT]\033[0m"
-						routerfunc
+
+						only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+						cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
+
+						if echo "$cache" | grep -iq "hit"
+						then
+							directory_cache_rule=$url
+							echo -e "[$url] \033[32m[MISS -> HIT]\033[0m"
+							routerfunc
+						fi
 					fi
 				###This else is for any occasion in which the first request falls into HIT instead of MISS
 				else
@@ -102,28 +106,36 @@ then
 					modified_url=$(echo "$url" | sed s"/\/routerwcd/\/routerwcd_$sorthash/")
 
 					request_dir=$(curl -Lisk "$modified_url")
-					only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
 
-					if cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
+					if [ -n "$request_dir" ]
 					then
-						if echo "$cache" | grep -iq "miss"
+
+						only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+						if cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
 						then
-
-							echo -e "[$modified_url] \033[32m[MISS]\033[0m"
-							for i in $(seq 1 2)
-							do
-								request_dir=$(curl -Lisk "$modified_url")
-								sleep 3
-							done
-
-							only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
-							cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
-
-							if echo "$cache" | grep -iq "hit"
+							if echo "$cache" | grep -iq "miss"
 							then
-								directory_cache_rule=$modified_url
-								echo -e "[$modified_url] \033[32m[MISS -> HIT]\033[0m"
-								routerfunc
+
+								echo -e "[$modified_url] \033[32m[MISS]\033[0m"
+								for i in $(seq 1 2)
+								do
+									request_dir=$(curl -Lisk "$modified_url")
+									sleep 3
+								done
+
+								if [ -n "$request_dir" ]
+								then
+
+									only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+									cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
+
+									if echo "$cache" | grep -iq "hit"
+									then
+										directory_cache_rule=$modified_url
+										echo -e "[$modified_url] \033[32m[MISS -> HIT]\033[0m"
+										routerfunc
+									fi
+								fi
 							fi
 						fi
 					fi
@@ -189,61 +201,67 @@ then
 			for y in $(echo "$crawler_clean" | tr -s '@' '\n' | shuf | head -n50)
 			do
 				request_original=$(curl -Lski "$y" -H "$setcookie")
-				path_original=$(echo "$y" | sed -E s'/https:\/\/[^/]*\///')
+				if [ -n "$request_original" ]
+				then
+					path_original=$(echo "$y" | sed -E s'/https:\/\/[^/]*\///')
 
-				for z in $(echo "$hostandpath_with_dotsegments" | tr -s '@' '\n')
-				do
-					request_with_router=$(curl -Lski "$z$path_original" -H "$setcookie")
-
-					only_body1=$(cat -e <<< "$request_original" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
-					only_body2=$(cat -e <<< "$request_with_router" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
-
-					md5_request_original=$(echo "$request_original" | sed -n "$only_body1,\$p" | md5sum)
-					md5_request_with_router=$(echo "$request_with_router" | sed -n "$only_body2,\$p" | md5sum)
-
-					echo -e "[$y] \033[31m[$md5_request_original]\033[0m"
-					echo -e "[$z$path_original] \033[31m[$md5_request_with_router]\033[0m"
-					probability="0"
-
-					if [ "$md5_request_original" = "$md5_request_with_router" ]
-					then
-						###INIT CALC PROBABILITY
-						
-						only_endresp=$(echo "$request_original" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
-						if ! echo "$request_original" | sed -n "$only_endresp,\$p" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)'
+					for z in $(echo "$hostandpath_with_dotsegments" | tr -s '@' '\n')
+					do
+						request_with_router=$(curl -Lski "$z$path_original" -H "$setcookie")
+						if [ -n "$request_with_router" ]
 						then
-							
-							only_endresp=$(echo "$request_with_router" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
-							if echo "$request_with_router" | sed -n "$only_endresp,\$p" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)'
+
+							only_body1=$(cat -e <<< "$request_original" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
+							only_body2=$(cat -e <<< "$request_with_router" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
+
+							md5_request_original=$(echo "$request_original" | sed -n "$only_body1,\$p" | md5sum)
+							md5_request_with_router=$(echo "$request_with_router" | sed -n "$only_body2,\$p" | md5sum)
+
+							echo -e "[$y] \033[31m[$md5_request_original]\033[0m"
+							echo -e "[$z$path_original] \033[31m[$md5_request_with_router]\033[0m"
+							probability="0"
+
+							if [ "$md5_request_original" = "$md5_request_with_router" ]
 							then
-								###DISCREPANCY DETECTED +50% PROBABILITY
-								probability="50"
-
-								sleep 2s
-
-								setmatch_status="\033[31mNO\033[0m"
-								if [ -n "$setmatch" ] && echo "$request_with_router" | sed -n "$only_endresp,\$p" | grep -qEi "$setmatch"
+								###INIT CALC PROBABILITY
+								
+								only_endresp=$(echo "$request_original" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+								if ! echo "$request_original" | sed -n "$only_endresp,\$p" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)'
 								then
-									###SETMATCH DETECTED +45% PROBABILITY
-									probability=$(expr $probability + 45)
-									setmatch_status="\033[32mYES\033[0m"
-								fi
+									
+									only_endresp=$(echo "$request_with_router" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+									if echo "$request_with_router" | sed -n "$only_endresp,\$p" | grep -qEi '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)'
+									then
+										###DISCREPANCY DETECTED +50% PROBABILITY
+										probability="50"
 
-								sleep 2s
+										sleep 2s
 
-								page404_status="\033[31mYES\033[0m"
-								if ! echo "$request_with_router" | sed -n "$only_endresp,\$p" | head -n1 | grep -q '404'
-								then
-									###NOT A 404 PAGE +4% PROBABILITY
-									probability=$(expr $probability + 4)
-									page404_status="\033[32mNO\033[0m"
+										setmatch_status="\033[31mNO\033[0m"
+										if [ -n "$setmatch" ] && echo "$request_with_router" | sed -n "$only_endresp,\$p" | grep -qEi "$setmatch"
+										then
+											###SETMATCH DETECTED +45% PROBABILITY
+											probability=$(expr $probability + 45)
+											setmatch_status="\033[32mYES\033[0m"
+										fi
+
+										sleep 2s
+
+										page404_status="\033[31mYES\033[0m"
+										if ! echo "$request_with_router" | sed -n "$only_endresp,\$p" | head -n1 | grep -q '404'
+										then
+											###NOT A 404 PAGE +4% PROBABILITY
+											probability=$(expr $probability + 4)
+											page404_status="\033[32mNO\033[0m"
+										fi
+									
+										echo -e "[$z$path_original] \033[32m[DISCREPANCY DETECTED]\033[0m [SETMATCH: $setmatch_status] [404 PAGE: $page404_status] [PROBABILITY VULN: \033[32m$probability%\033[0m]"
+									fi
 								fi
-							
-								echo -e "[$z$path_original] \033[32m[DISCREPANCY DETECTED]\033[0m [SETMATCH: $setmatch_status] [404 PAGE: $page404_status] [PROBABILITY VULN: \033[32m$probability%\033[0m]"
 							fi
 						fi
-					fi
-				done
+					done
+				fi
 
 				if [ -n "$setcontinue" ]
 				then
