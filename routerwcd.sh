@@ -71,63 +71,68 @@ then
 	do
 		###SEARCHING CACHE RULES IN DIRECTORIES (MISS|HIT) directories/routerwcd
 		request_dir=$(curl -Lisk "$url")
-		only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
-
-		if cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
+		if [ -n "$request_dir" ]
 		then
-			if echo "$cache" | grep -iq "miss"
+			only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+
+			if cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
 			then
-				echo -e "[$url] \033[32m[MISS]\033[0m"
-				for i in $(seq 1 2)
-				do
-					request_dir=$(curl -Lisk "$url")
-					sleep 3
-				done
-
-				only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
-				cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
-
-				if echo "$cache" | grep -iq "hit"
+				if echo "$cache" | grep -iq "miss"
 				then
-					directory_cache_rule=$url
-					echo -e "[$url] \033[32m[MISS -> HIT]\033[0m"
-					routerfunc
-				fi
-			###This else is for any occasion in which the first request falls into HIT instead of MISS
-			else
-				###Make a draw at the end of the cd router (unpredictable hash) to find MISS in the first request
-				sorthash=$(echo {a..z}{0..9} | tr -s ' ' '\n'  | shuf | head -n 5 | tr -s '\n' '0')
-				modified_url=$(echo "$url" | sed s"/\/routerwcd/\/routerwcd_$sorthash/")
+					echo -e "[$url] \033[32m[MISS]\033[0m"
+					for i in $(seq 1 2)
+					do
+						request_dir=$(curl -Lisk "$url")
+						sleep 3
+					done
 
-				request_dir=$(curl -Lisk "$modified_url")
-				only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+					only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+					cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
 
-				if cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
-				then
-					if echo "$cache" | grep -iq "miss"
+					if echo "$cache" | grep -iq "hit"
 					then
+						directory_cache_rule=$url
+						echo -e "[$url] \033[32m[MISS -> HIT]\033[0m"
+						routerfunc
+					fi
+				###This else is for any occasion in which the first request falls into HIT instead of MISS
+				else
+					###Make a draw at the end of the cd router (unpredictable hash) to find MISS in the first request
+					sorthash=$(echo {a..z}{0..9} | tr -s ' ' '\n'  | shuf | head -n 5 | tr -s '\n' '0')
+					modified_url=$(echo "$url" | sed s"/\/routerwcd/\/routerwcd_$sorthash/")
 
-						echo -e "[$modified_url] \033[32m[MISS]\033[0m"
-						for i in $(seq 1 2)
-						do
-							request_dir=$(curl -Lisk "$modified_url")
-							sleep 3
-						done
+					request_dir=$(curl -Lisk "$modified_url")
+					only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
 
-						only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
-						cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
-
-						if echo "$cache" | grep -iq "hit"
+					if cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
+					then
+						if echo "$cache" | grep -iq "miss"
 						then
-							directory_cache_rule=$modified_url
-							echo -e "[$modified_url] \033[32m[MISS -> HIT]\033[0m"
-							routerfunc
+
+							echo -e "[$modified_url] \033[32m[MISS]\033[0m"
+							for i in $(seq 1 2)
+							do
+								request_dir=$(curl -Lisk "$modified_url")
+								sleep 3
+							done
+
+							only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+							cache=$(echo "$request_dir" | sed -n "$only_endresp,\$p" | grep -Ei '^[A-Za-z-]+((-Cache:|-Cache-Status:|-Varnish:|-Cache-Server:|-Cache-Provider:|-Cache-Lookup:|-Cache-Int:)\s(hit|miss))|^Server-Timing:\s.*desc=(miss|hit)')
+
+							if echo "$cache" | grep -iq "hit"
+							then
+								directory_cache_rule=$modified_url
+								echo -e "[$modified_url] \033[32m[MISS -> HIT]\033[0m"
+								routerfunc
+							fi
 						fi
 					fi
 				fi
+			else
+				echo -e "[$url] \033[31m[NO-CACHE]\033[0m"
 			fi
 		else
-			echo -e "[$url] \033[31m[NO-CACHE]\033[0m"
+			echo -e "[$url] \033[31m[NO-CONNECTION]\033[0m"
 		fi
 	done
 
