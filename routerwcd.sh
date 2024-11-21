@@ -203,7 +203,10 @@ then
 				request_original=$(curl -Lski "$y" -H "$setcookie")
 				if [ -n "$request_original" ]
 				then
+    
 					path_original=$(echo "$y" | sed -E s'/https:\/\/[^/]*\///')
+     					only_body1=$(cat -e <<< "$request_original" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
+	  				md5_request_original=$(echo "$request_original" | sed -n "$only_body1,\$p" | md5sum)
 
 					for z in $(echo "$hostandpath_with_dotsegments" | tr -s '@' '\n')
 					do
@@ -211,10 +214,7 @@ then
 						if [ -n "$request_with_router" ]
 						then
 
-							only_body1=$(cat -e <<< "$request_original" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
 							only_body2=$(cat -e <<< "$request_with_router" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
-
-							md5_request_original=$(echo "$request_original" | sed -n "$only_body1,\$p" | md5sum)
 							md5_request_with_router=$(echo "$request_with_router" | sed -n "$only_body2,\$p" | md5sum)
 
 							echo -e "[$y] \033[31m[$md5_request_original]\033[0m"
