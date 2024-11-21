@@ -153,12 +153,12 @@ then
 	then
 		echo
 		echo -e "\033[31m+====================================================================================+\033[0m"
-		echo -e "\033[32mPATHS WITH CACHE RULES:\033[0m"	
+		echo -e "\033[32mPATHS WITH CACHE RULES:\033[0m"
+  		echo -e "\033[31m+====================================================================================+\033[0m"
 		for i in $(echo "$hostandpath_with_dotsegments" | tr -s '@' '\n')
 		do
 			echo "$i" | sed -E s'/https:\/\/[^/]*\///' | sed s'/^/\//' | sed s'/\.\.%2f/ /' | cut -d ' ' -f1
 		done
-		echo -e "\033[31m+====================================================================================+\033[0m"
 		echo
 		echo -e "\033[31m+====================================================================================+\033[0m"
 		echo -e "\033[32mSTEP 2: DETECTING NORMALIZATION BY THE ORIGIN SERVER\033[0m"
@@ -283,7 +283,7 @@ then
 				
 	else
 			echo -e "\033[31m+====================================================================================+\033[0m"
-			echo -e "\033[31mNO STATIC DIRECTORIES WERE FOUND WITH CACHE HEADERS\033[0m"
+			echo -e "\033[31mNO STATIC DIRECTORIES WERE FOUND WITH CACHE RULES\033[0m"
 			echo -e "\033[31m+====================================================================================+\033[0m"
 	fi
 
