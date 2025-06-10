@@ -71,7 +71,11 @@ then
 	do
 		###SEARCHING CACHE RULES IN DIRECTORIES (MISS|HIT) directories/routerwcd
 		request_dir=$(curl -Lisk "$url")
-		if [ -n "$request_dir" ]
+
+		####### VERIFY IF request_dir NOT REDIRECT OTHER HOST ########
+		semredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
+		redirverificado=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+		if [ -n "$request_dir" -a "$semredir" = "1" -o -n "$request_dir" -a "$redirverificado" = "$hostset" ]
 		then
 
 			only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
@@ -85,8 +89,11 @@ then
 						request_dir=$(curl -Lisk "$url")
 						sleep 3
 					done
-
-					if [ -n "$request_dir" ]
+					
+					####### VERIFY IF request_dir NOT REDIRECT OTHER HOST ########
+					semredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
+					redirverificado=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+					if [ -n "$request_dir" -a "$semredir" = "1" -o -n "$request_dir" -a "$redirverificado" = "$hostset" ]
 					then
 
 						only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
@@ -107,7 +114,10 @@ then
 
 					request_dir=$(curl -Lisk "$modified_url")
 
-					if [ -n "$request_dir" ]
+					####### VERIFY IF request_dir NOT REDIRECT OTHER HOST ########
+					semredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
+					redirverificado=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+					if [ -n "$request_dir" -a "$semredir" = "1" -o -n "$request_dir" -a "$redirverificado" = "$hostset" ]
 					then
 
 						only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
@@ -123,7 +133,10 @@ then
 									sleep 3
 								done
 
-								if [ -n "$request_dir" ]
+								####### VERIFY IF request_dir NOT REDIRECT OTHER HOST ########
+								semredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
+								redirverificado=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+								if [ -n "$request_dir" -a "$semredir" = "1" -o -n "$request_dir" -a "$redirverificado" = "$hostset" ]
 								then
 
 									only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
@@ -144,7 +157,7 @@ then
 				echo -e "[$url] \033[31m[NO-CACHE]\033[0m"
 			fi
 		else
-			echo -e "[$url] \033[31m[NO-CONNECTION]\033[0m"
+			echo -e "[$url] \033[31m[NO-CONNECTION OR REDIRECT TO OTHER HOST]\033[0m"
 		fi
 	done
 
@@ -201,22 +214,45 @@ then
 			for y in $(echo "$crawler_clean" | tr -s '@' '\n' | shuf | head -n50)
 			do
 				request_original=$(curl -Lski "$y" -H "$setcookie")
-				if [ -n "$request_original" ]
+
+				####### VERIFY IF request_original NOT REDIRECT OTHER HOST ########
+				semredir=$(echo "$request_original" | grep "^HTTP/" | wc -l)
+				redirverificado=$(echo "$request_original" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+
+				####### VERIFY IF request_original NOT IS 404 ##########################################
+				only_endresp=$(echo "$request_original" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+				status_code=$(echo "$request_original" | sed -n "$only_endresp,\$p" | head -n1 | cut -d ' ' -f2)
+
+				if [ -n "$request_original" -a "$semredir" = "1" -a "$status_code" -ne "404" -o -n "$request_original" -a "$redirverificado" = "$hostset" -a "$status_code" -ne "404" ]
 				then
-    
 					path_original=$(echo "$y" | sed -E s'/https:\/\/[^/]*\///')
+
+					################# MAKE ONLY END BODY RESPONSE (request_original) ##################
      					only_body1=$(cat -e <<< "$request_original" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
 	  				md5_request_original=$(echo "$request_original" | sed -n "$only_body1,\$p" | md5sum)
 
 					for z in $(echo "$hostandpath_with_dotsegments" | tr -s '@' '\n')
 					do
+						
 						request_with_router=$(curl -Lski "$z$path_original" -H "$setcookie")
-						if [ -n "$request_with_router" ]
+
+						####### VERIFY IF request_with_router NOT IS 404 ##########################################
+						only_endresp=$(echo "$request_with_router" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
+						status_code=$(echo "$request_with_router" | sed -n "$only_endresp,\$p" | head -n1 | cut -d ' ' -f2)
+
+						####### VERIFY IF request_with_router NOT REDIRECT TO OTHER HOST ########
+						semredir=$(echo "$request_with_router" | grep "^HTTP/" | wc -l)
+						redirverificado=$(echo "$request_with_router" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+
+						if [ -n "$request_with_router" -a "$semredir" = "1" -a "$status_code" -ne "404" -o -n "$request_with_router" -a "$redirverificado" = "$hostset" -a "$status_code" -ne "404" ]
 						then
 
+							################# MAKE ONLY END BODY RESPONSE (request_with_router) ##################
 							only_body2=$(cat -e <<< "$request_with_router" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
 							md5_request_with_router=$(echo "$request_with_router" | sed -n "$only_body2,\$p" | md5sum)
 
+
+							################# COMPARING MD5SUM OF request_original WITH request_with_router #######################
 							echo -e "[$y] \033[31m[$md5_request_original]\033[0m"
 							echo -e "[$z$path_original] \033[31m[$md5_request_with_router]\033[0m"
 							probability="0"
@@ -240,22 +276,12 @@ then
 										setmatch_status="\033[31mNO\033[0m"
 										if [ -n "$setmatch" ] && echo "$request_with_router" | sed -n "$only_endresp,\$p" | grep -qEi "$setmatch"
 										then
-											###SETMATCH DETECTED +45% PROBABILITY
-											probability=$(expr $probability + 45)
+											###SETMATCH DETECTED +49% PROBABILITY
+											probability=$(expr $probability + 49)
 											setmatch_status="\033[32mYES\033[0m"
 										fi
-
-										sleep 2s
-
-										page404_status="\033[31mYES\033[0m"
-										if ! echo "$request_with_router" | sed -n "$only_endresp,\$p" | head -n1 | grep -q '404'
-										then
-											###NOT A 404 PAGE +4% PROBABILITY
-											probability=$(expr $probability + 4)
-											page404_status="\033[32mNO\033[0m"
-										fi
 									
-										echo -e "[$z$path_original] \033[32m[DISCREPANCY DETECTED]\033[0m [SETMATCH: $setmatch_status] [404 PAGE: $page404_status] [PROBABILITY VULN: \033[32m$probability%\033[0m]"
+										echo -e "[$z$path_original] \033[32m[DISCREPANCY DETECTED]\033[0m [SETMATCH: $setmatch_status] [PROBABILITY VULN: \033[32m$probability%\033[0m]"
 									fi
 								fi
 							fi
