@@ -73,9 +73,11 @@ then
 		request_dir=$(curl -Lisk "$url")
 
 		####### VERIFY IF request_dir NOT REDIRECT OTHER HOST ########
-		semredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
-		redirverificado=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
-		if [ -n "$request_dir" -a "$semredir" = "1" -o -n "$request_dir" -a "$redirverificado" = "$hostset" ]
+		withoutredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
+		withredir1=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+    		withredir2=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | grep "^/[A-Za-z0-9%?_-]" | sed -E s'/\/.*/\//')
+ 
+		if [ -n "$request_dir" -a "$withoutredir" = "1" -o -n "$request_dir" -a "$withredir1" = "$hostset" -o -n "$request_dir" -a "$withredir2" = "/" ]
 		then
 
 			only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
@@ -91,9 +93,10 @@ then
 					done
 					
 					####### VERIFY IF request_dir NOT REDIRECT OTHER HOST ########
-					semredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
-					redirverificado=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
-					if [ -n "$request_dir" -a "$semredir" = "1" -o -n "$request_dir" -a "$redirverificado" = "$hostset" ]
+					withoutredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
+					withredir1=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+					withredir2=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | grep "^/[A-Za-z0-9%?_-]" | sed -E s'/\/.*/\//')
+					if [ -n "$request_dir" -a "$withoutredir" = "1" -o -n "$request_dir" -a "$withredir1" = "$hostset" -o -n "$request_dir" -a "$withredir2" = "/" ]
 					then
 
 						only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
@@ -115,9 +118,10 @@ then
 					request_dir=$(curl -Lisk "$modified_url")
 
 					####### VERIFY IF request_dir NOT REDIRECT OTHER HOST ########
-					semredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
-					redirverificado=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
-					if [ -n "$request_dir" -a "$semredir" = "1" -o -n "$request_dir" -a "$redirverificado" = "$hostset" ]
+					withoutredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
+					withredir1=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+					withredir2=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | grep "^/[A-Za-z0-9%?_-]" | sed -E s'/\/.*/\//')
+					if [ -n "$request_dir" -a "$withoutredir" = "1" -o -n "$request_dir" -a "$withredir1" = "$hostset" -o -n "$request_dir" -a "$withredir2" = "/" ]
 					then
 
 						only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
@@ -134,9 +138,10 @@ then
 								done
 
 								####### VERIFY IF request_dir NOT REDIRECT OTHER HOST ########
-								semredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
-								redirverificado=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
-								if [ -n "$request_dir" -a "$semredir" = "1" -o -n "$request_dir" -a "$redirverificado" = "$hostset" ]
+								withoutredir=$(echo "$request_dir" | grep "^HTTP/" | wc -l)
+								withredir1=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+								withredir2=$(echo "$request_dir" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | grep "^/[A-Za-z0-9%?_-]" | sed -E s'/\/.*/\//')
+								if [ -n "$request_dir" -a "$withoutredir" = "1" -o -n "$request_dir" -a "$withredir1" = "$hostset" -o -n "$request_dir" -a "$withredir2" = "/" ] 
 								then
 
 									only_endresp=$(echo "$request_dir" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
@@ -216,19 +221,21 @@ then
 				request_original=$(curl -Lski "$y" -H "$setcookie")
 
 				####### VERIFY IF request_original NOT REDIRECT OTHER HOST ########
-				semredir=$(echo "$request_original" | grep "^HTTP/" | wc -l)
-				redirverificado=$(echo "$request_original" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+				withoutredir=$(echo "$request_original" | grep "^HTTP/" | wc -l)
+				withredir1=$(echo "$request_original" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+				withredir2=$(echo "$request_original" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | grep "^/[A-Za-z0-9%?_-]" | sed -E s'/\/.*/\//')
 
 				####### VERIFY IF request_original NOT IS 404 ##########################################
 				only_endresp=$(echo "$request_original" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
 				status_code=$(echo "$request_original" | sed -n "$only_endresp,\$p" | head -n1 | cut -d ' ' -f2)
-
-				if [ -n "$request_original" -a "$semredir" = "1" -a "$status_code" -ne "404" -o -n "$request_original" -a "$redirverificado" = "$hostset" -a "$status_code" -ne "404" ]
+				
+				if [ -n "$request_original" -a "$withoutredir" = "1" -a "$status_code" -ne "404" -o -n "$request_original" -a "$withredir1" = "$hostset" -a "$status_code" -ne "404" -o -n "$request_original" -a "$withredir2" = "/" -a "$status_code" -ne "404" ]
 				then
+					
 					path_original=$(echo "$y" | sed -E s'/https:\/\/[^/]*\///')
 
 					################# MAKE ONLY END BODY RESPONSE (request_original) ##################
-     					only_body1=$(cat -e <<< "$request_original" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
+     				only_body1=$(cat -e <<< "$request_original" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
 	  				md5_request_original=$(echo "$request_original" | sed -n "$only_body1,\$p" | md5sum)
 
 					for z in $(echo "$hostandpath_with_dotsegments" | tr -s '@' '\n')
@@ -236,17 +243,19 @@ then
 						
 						request_with_router=$(curl -Lski "$z$path_original" -H "$setcookie")
 
+
 						####### VERIFY IF request_with_router NOT IS 404 ##########################################
 						only_endresp=$(echo "$request_with_router" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
 						status_code=$(echo "$request_with_router" | sed -n "$only_endresp,\$p" | head -n1 | cut -d ' ' -f2)
 
 						####### VERIFY IF request_with_router NOT REDIRECT TO OTHER HOST ########
-						semredir=$(echo "$request_with_router" | grep "^HTTP/" | wc -l)
-						redirverificado=$(echo "$request_with_router" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+						withoutredir=$(echo "$request_with_router" | grep "^HTTP/" | wc -l)
+						withredir1=$(echo "$request_with_router" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | sed -E s'/^https?:\/\///; s/\/\///; s/^www\.//; s/\/.*//')
+						withredir2=$(echo "$request_with_router" | grep "^[Ll]ocation:" | sed -n '$p' | cut -d ' ' -f2 | grep "^/[A-Za-z0-9%?_-]" | sed -E s'/\/.*/\//')
 
-						if [ -n "$request_with_router" -a "$semredir" = "1" -a "$status_code" -ne "404" -o -n "$request_with_router" -a "$redirverificado" = "$hostset" -a "$status_code" -ne "404" ]
+						if [ -n "$request_with_router" -a "$withoutredir" = "1" -a "$status_code" -ne "404" -o -n "$request_with_router" -a "$withredir1" = "$hostset" -a "$status_code" -ne "404" -o -n "$request_with_router" -a "$withredir2" = "/" -a "$status_code" -ne "404" ]
 						then
-
+							
 							################# MAKE ONLY END BODY RESPONSE (request_with_router) ##################
 							only_body2=$(cat -e <<< "$request_with_router" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
 							md5_request_with_router=$(echo "$request_with_router" | sed -n "$only_body2,\$p" | md5sum)
@@ -316,3 +325,4 @@ then
 else
 	$0
 fi
+
