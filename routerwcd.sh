@@ -235,7 +235,7 @@ then
 					path_original=$(echo "$y" | sed -E s'/https:\/\/[^/]*\///')
 
 					################# MAKE ONLY END BODY RESPONSE (request_original) ##################
-     				only_body1=$(cat -e <<< "$request_original" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
+     					only_body1=$(cat -e <<< "$request_original" | grep -n "^\^M\\$\$" | sed -n '$p' | cut -d ':' -f1)
 	  				md5_request_original=$(echo "$request_original" | sed -n "$only_body1,\$p" | md5sum)
 
 					for z in $(echo "$hostandpath_with_dotsegments" | tr -s '@' '\n')
