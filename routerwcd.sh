@@ -268,6 +268,7 @@ then
 
 							if [ "$md5_request_original" = "$md5_request_with_router" ]
 							then
+       								echo -e "[$z$path_original] \033[32m[$md5_request_with_router]\033[0m \033[32m[MD5EQUAL]\033[0m"
 								###INIT CALC PROBABILITY
 								
 								only_endresp=$(echo "$request_original" | grep -n "^HTTP/" | sed -n '$p' | cut -d ':' -f1)
